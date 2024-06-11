@@ -1,66 +1,38 @@
 // @ts-nocheck
-export function validate(str) {
-    if (str !== null) {
-        if (str !== undefined) {
-            if (str.length >= 11 && str.length <= 14) {
-                str = str
-                    .replace('.', '')
-                    .replace('.', '')
-                    .replace('-', '')
-                    .replace(' ', '')
+export function validate(rawCpf) {
+    if (rawCpf === null || rawCpf === undefined) return false;
+    const cleanCpf = getCleanCpf(rawCpf);
+    if (!isValidLength(cleanCpf)) return false;
+    if (doesAllDigitsAreEqual(cleanCpf)) return false;
+    const digit1 = calculateDigit(cleanCpf, 10);
+    const digit2 = calculateDigit(cleanCpf, 11);
+    const validatedDigits = `${digit1}${digit2}`;
+    const actualDigits = extractDigits(cleanCpf);
+    return actualDigits == validatedDigits;
+}
 
-                if (!str.split('').every((c) => c === str[0])) {
-                    try {
-                        let d1
-                        let d2
-                        let dg1
-                        let dg2
-                        let rest
-                        let digito
-                        let nDigResult
-                        d1 = d2 = 0
-                        dg1 = dg2 = rest = 0
+function calculateDigit(cpf: string, factor: number) {
+    let sum = 0;
+    for (let digit of cpf) {
+        if (factor > 1) sum += digit * factor--;
+    }
+    const rest = sum % 11;
+    return (rest < 2) ? 0 : 11 - rest;
+}
 
-                        for (
-                            let nCount = 1;
-                            nCount < str.length - 1;
-                            nCount++
-                        ) {
-                            // if (isNaN(parseInt(str.substring(nCount -1, nCount)))) {
-                            // 	return false;
-                            // } else {
+function isValidLength(cpf: string) {
+    return cpf.length === 11;
+}
 
-                            digito = parseInt(str.substring(nCount - 1, nCount))
-                            d1 += (11 - nCount) * digito
+function doesAllDigitsAreEqual(cpf: string) {
+    const firstDigit = cpf[0];
+    return [...cpf].every(digit => digit === firstDigit);
+}
 
-                            d2 += (12 - nCount) * digito
-                            // }
-                        }
+function extractDigits(cpf: string) {
+    return cpf.substring(9, 11);
+}
 
-                        rest = d1 % 11
-
-                        dg1 = rest < 2 ? (dg1 = 0) : 11 - rest
-                        d2 += 2 * dg1
-                        rest = d2 % 11
-                        if (rest < 2) {
-                            dg2 = 0
-                        } else {
-                            dg2 = 11 - rest
-                        }
-
-                        const nDigVerific = str.substring(
-                            str.length - 2,
-                            str.length
-                        )
-                        nDigResult = `${dg1}${dg2}`
-                        return nDigVerific == nDigResult
-                    } catch (e) {
-                        console.error(`Erro !${e}`)
-
-                        return false
-                    }
-                } else return false
-            } else return false
-        }
-    } else return false
+function getCleanCpf(cpf: string) {
+    return cpf.replace(/\D/g, "");
 }
